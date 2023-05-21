@@ -1,19 +1,22 @@
 import Header from './components/Header'
 import useUser from "./components/Util/User/useUser"
 import YMap from './components/YMap'
-import React from 'react'
+import React,{useState} from 'react'
+import {BrowserRouter as Router, Routes, Route, Outlet, Link } from "react-router-dom";
+import AuthenticatePage from "./components/Authentication/AuthenticationPage";
 
 function App() {
-  // const {user, setUser} = useUser();
+const {user, setUser} = useUser();
 
-  // if (!user) {
-  //   return <AuthenticatePage setUser={setUser}/>
-  // }
-  
   return (
     <div className="App">
-        <Header/>
-        <YMap/>
+        <Router>
+            <Routes>
+                <Route path="/" element={<YMap/>}>
+                </Route>
+                <Route path="/login" element={<AuthenticatePage setUser={setUser}/>} />
+            </Routes>
+        </Router>
     </div>
   );
 }

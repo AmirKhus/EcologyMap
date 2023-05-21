@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import {useState} from "react";
 
-const {SIGNUP} = require("../../Util/Urls");
+const {SIGNUP} = require("../Util/Urls");
 const axios = require("axios");
 const {loginUser} = require("./Login");
 
