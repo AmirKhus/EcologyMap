@@ -32,12 +32,19 @@ const Header = () => {
         setValue(value+1)
         window.location.href='http://localhost:3000/login';
     };
+
+    const goProfilePage = () => {
+        setValue(value+1)
+        window.location.href='http://localhost:3000/profile';
+    };
+
     return (
         <div>
             <HeaderContainer>
                 <Logo>FB-Map</Logo>
                 {/*<button id = "loginButton" onClick={goFriend}>Вход</button>*/}
                 <button id = "loginButton" onClick={goAuthenticatePage}>Вход</button>
+                <button id = "profileButton" onClick={goProfilePage}>Личный кабинет</button>
                 {/*<Link to="/login">Nothing Here</Link>*/}
             </HeaderContainer>
 

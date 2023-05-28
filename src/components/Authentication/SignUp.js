@@ -11,6 +11,7 @@ async function signup(credentials) {
     credentials['role'] = ['user']
 
     axios.post(SIGNUP, credentials).then((response) => {
+        console.log(credentials.email);
         var loginCredentials = {
             email: credentials['email'],
             password: credentials['password']

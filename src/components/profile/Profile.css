@@ -1,0 +1,18 @@
+
+.profile__image{
+    padding-left: 5%;
+    width: 150px;
+    object-fit: contain;
+}
+
+.profile__image:hover{
+    transform: scale(1.17);
+}
+
+.profile__fullname{
+    margin-top: 7%;
+}
+
+.profile__sendPost{
+    padding: 5% 2%;
+}

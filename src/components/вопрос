@@ -61,135 +61,29 @@ const YMap = () => {
                     // balloonContent: firstGeoObject.getAddressLine()
                     balloonContent: '     <div> <input type="button" onClick={() => { openDescription(index);}} value="Подробнее"/> </div>'
                 });
-                regionName =firstGeoObject.getAdministrativeAreas()[0]; 
+                regionName =firstGeoObject.getAdministrativeAreas()[0];
             })
-                // тут рисутся регионы
-            ymaps.current.borders.load('RU').then(function (geojson) {
-                addOldRegionName(regionName)
-                for (var i = 0; i < geojson.features.length; i++) {
-                    if(geojson.features[i].properties.name && geojson.features[i].properties.name === oldRegionName){
-                        mapRef.current.geoObjects.remove(oldRegion);
-                    }
-                    if (geojson.features[i].properties.name && geojson.features[i].properties.name === regionName) {
-                        var polygon = new ymaps.current.Polygon([
-                            geojson.features[i].geometry.coordinates[0]
-                        ], {
-                            hintContent: "MyPoligon"
-                        }, {
-                            fillColor: '#6699ff',
-                            interactivityModel: 'default#transparent',
-                            strokeWidth: 8,
-                            opacity: 0.5
-                        });
-
-                      mapRef.current.geoObjects.add(polygon);
-                        addOldRegion(polygon)
-                    }
-                }
-            }) .catch(function (error) {
-                    console.error(error);
-            });
     };
-
-    // useEffect(() => {
-    //     if (document.getElementById('balloon') && clusterBalloon) {
-    //       ReactDOM.hydrate(
-    //         <InnerLayout
-    //           openDescription={openDescription}
-    //           openedDescription={openedDescription}
-    //           {...clusterBalloon}
-    //         />,
-    //         document.getElementById('balloon'),
-    //       );
-    //     }
-    //   }, [clusterBalloon, openedDescription]);
-
-    // const getLayout = (Component, props) => {
-    //     if (ymaps) {
-    //       const html = ReactDOMServer.renderToString(<Component {...props} />);
-    //       const Layout = ymaps.templateLayoutFactory.createClass(
-    //         `<div id="balloon">${html}</div>`,
-    //         {
-    //           build: function() {
-    //             Layout.superclass.build.call(this);
-    //             ReactDOM.hydrate(
-    //               <Component {...props} />,
-    //               document.getElementById('balloon'),
-    //             );
-    //           },
-    //         },
-    //       );
-
-    //       return Layout;
-    //     }
-    //     return null;
-    //   };
-    //   const openCluster = e => {
-    //     const cluster = e.get('cluster');
-    //     if (cluster) {
-    //       if (!clusterBalloon) {
-    //         setClusterBalloon(
-    //           cluster.state.get('activeObject').properties.getAll(),
-    //         );
-    //       }
-
-    //       cluster.state.events.add('change', () => {
-    //         const activeObject = cluster.state.get('activeObject');
-    //         console.log(activeObject.properties.getAll().index)
-    //         console.log(clusterBalloon.index)
-    //         if (
-    //           !clusterBalloon ||
-    //           (clusterBalloon &&
-    //             activeObject.properties.getAll().index !== clusterBalloon.index)
-    //         ) {
-    //           setClusterBalloon(activeObject.properties.getAll());
-    //         }
-    //       });
-    //     }
-    //   };
     const markers = [ {
         "coord": "55.79424260833246,49.68814042729016",
         "id": 1,
-        "author": "Amir",
-        "type": "Мусор",
-        "description": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
-        "evaluation": 10,
-        "date":"2001-01-01"
+        "author": "Abdul",
         },
         {
             "coord": "55.62832515119459, 49.11135820072768",
             "id": 2,
-            "author": "Amir",
-            "type": "Мусор",
-            "description": "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla",
-            "evaluation": 10,
-            "date":"2001-01-01"
+            "author": "Abdul",
         },
         {
             "coord": "55.910118447321, 48.70761064213393",
             "id": 3,
-            "author": "Amir",
-            "type": "Мусор",
-            "description": "et iusto sed quo iure\nvoluptatem occaecati omnis eligendi aut ad\nvoluptatem doloribus vel accusantium quis pariatur\nmolestiae porro eius odio et labore et velit aut",
-            "evaluation": 10,
-            "date":"2001-01-01"
+            "author": "Abdul",
         }
     ]
     const addMarkers = () =>{
-        let POINTS = [[55.79424260833246, 49.68814042729016],[55.62832515119459, 49.11135820072768],[55.910118447321, 48.70761064213393]]
-        
-                // Создание макета содержимого балуна.
-        // Макет создается с помощью фабрики макетов с помощью текстового шаблона.
+
 
         markers.forEach(marker => {
-            // var BalloonContentLayout = ymaps.templateLayoutFactory.createClass(
-            //         getLayout(InnerLayout, {
-        //             element,
-        //             openedDescription,
-        //             openDescription,
-        //         }
-        //     )
-        // )
             var balloonContentLayout = ymaps.templateLayoutFactory.createClass(
                 '<div class="cd-quick-view">' +
                 '<div class="cd-slider-wrapper">' +
@@ -202,10 +96,6 @@ const YMap = () => {
                 '<div class="cd-item-info">' +
                 '<h2>Produt Title</h2>' +
                 `<p>Автор метки: ${marker.author}</p>` +
-                `<p>Тип экологической проблемы ${marker.type}</p>` +
-                `<p>Описание: ${marker.description}</p>` +
-                `<p>Дата публикации: ${marker.date}</p>` +
-                `<p>Оценка: ${marker.evaluation}</p>` +
                 `<p>Инфа о воздухе: пока нет</p>` +
                 '<ul class="cd-item-action">' +
                 '<li>' +
@@ -248,17 +138,16 @@ const YMap = () => {
                 if (placemarkRef.current) {
                 placemarkRef.current.geometry.setCoordinates(coords);
             } else {
-                placemarkRef.current = createPlacemark(coords);            
+                placemarkRef.current = createPlacemark(coords);
                 mapRef.current.geoObjects.add(placemarkRef.current);
                 placemarkRef.current.events.add("dragend", function () {
                     getAddress(placemarkRef.current.geometry.getCoordinates());
-                });                
+                });
             }
             getAddress(coords);
         }
     };
 
-    const [show2, setShow2] = useState(false);
 
     function sayHello() {
         setValue(count+1);
@@ -268,16 +157,7 @@ const YMap = () => {
         else{
             checkAddPlacemark(canAddPlacemark => !canAddPlacemark)
         }
-
     }
-
-    const handleClose2 = () => {
-        setShow2(false);
-    }
-    const handleShow2 = () => {
-        setShow2(true);
-    }
-
 
     return (
         <div>
@@ -289,10 +169,9 @@ const YMap = () => {
                     center: [55.751574, 37.573856],
                     zoom: 9
                 }}
-                     // modules={["Clusterer","Polygon","GeoObject","geoQuery","control.ZoomControl", "control.FullscreenControl","Placemark", "geocode",
-                     //     "geoObject.addon.balloon","borders", "ObjectManager",'geoObject.addon.balloon','clusterer.addon.balloon',
-                     //     'templateLayoutFactory']}
-                     modules={['templateLayoutFactory']}
+                     modules={["Clusterer","Polygon","GeoObject","geoQuery","control.ZoomControl", "control.FullscreenControl","Placemark", "geocode",
+                         "geoObject.addon.balloon","borders", "ObjectManager",'geoObject.addon.balloon','clusterer.addon.balloon',
+                         'templateLayoutFactory']}
                      style={{
                          flex: 2,
                          height: "calc(100vh - 57px)"
@@ -301,7 +180,6 @@ const YMap = () => {
                      instanceRef={mapRef}
                      onLoad={ymaps => setYmaps(ymaps)}
                      state={mapState}
-                     width={"100%"} height={"100%"}
                 >
                     <Button  onClick={sayHello} data={{ content: 'Button' }} options={{ float: 'right' }} />
                     <Button  onClick={addMarkers} data={{ content: 'Вывод маркеров' }} options={{ float: 'right' }} />

@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState,useEffect,useRef  } from 'react';
 import { YMaps, Map, Clusterer , Button,Placemark } from '@pbe/react-yandex-maps';
 import "../css/ballon.css"
 import Header from "./Header";
@@ -61,7 +61,7 @@ const YMap = () => {
                     // balloonContent: firstGeoObject.getAddressLine()
                     balloonContent: '     <div> <input type="button" onClick={() => { openDescription(index);}} value="Подробнее"/> </div>'
                 });
-                regionName =firstGeoObject.getAdministrativeAreas()[0]; 
+                regionName =firstGeoObject.getAdministrativeAreas()[0];
             })
                 // тут рисутся регионы
             ymaps.current.borders.load('RU').then(function (geojson) {
@@ -90,63 +90,6 @@ const YMap = () => {
                     console.error(error);
             });
     };
-
-    // useEffect(() => {
-    //     if (document.getElementById('balloon') && clusterBalloon) {
-    //       ReactDOM.hydrate(
-    //         <InnerLayout
-    //           openDescription={openDescription}
-    //           openedDescription={openedDescription}
-    //           {...clusterBalloon}
-    //         />,
-    //         document.getElementById('balloon'),
-    //       );
-    //     }
-    //   }, [clusterBalloon, openedDescription]);
-
-    // const getLayout = (Component, props) => {
-    //     if (ymaps) {
-    //       const html = ReactDOMServer.renderToString(<Component {...props} />);
-    //       const Layout = ymaps.templateLayoutFactory.createClass(
-    //         `<div id="balloon">${html}</div>`,
-    //         {
-    //           build: function() {
-    //             Layout.superclass.build.call(this);
-    //             ReactDOM.hydrate(
-    //               <Component {...props} />,
-    //               document.getElementById('balloon'),
-    //             );
-    //           },
-    //         },
-    //       );
-
-    //       return Layout;
-    //     }
-    //     return null;
-    //   };
-    //   const openCluster = e => {
-    //     const cluster = e.get('cluster');
-    //     if (cluster) {
-    //       if (!clusterBalloon) {
-    //         setClusterBalloon(
-    //           cluster.state.get('activeObject').properties.getAll(),
-    //         );
-    //       }
-
-    //       cluster.state.events.add('change', () => {
-    //         const activeObject = cluster.state.get('activeObject');
-    //         console.log(activeObject.properties.getAll().index)
-    //         console.log(clusterBalloon.index)
-    //         if (
-    //           !clusterBalloon ||
-    //           (clusterBalloon &&
-    //             activeObject.properties.getAll().index !== clusterBalloon.index)
-    //         ) {
-    //           setClusterBalloon(activeObject.properties.getAll());
-    //         }
-    //       });
-    //     }
-    //   };
     const markers = [ {
         "coord": "55.79424260833246,49.68814042729016",
         "id": 1,
@@ -177,7 +120,7 @@ const YMap = () => {
     ]
     const addMarkers = () =>{
         let POINTS = [[55.79424260833246, 49.68814042729016],[55.62832515119459, 49.11135820072768],[55.910118447321, 48.70761064213393]]
-        
+
                 // Создание макета содержимого балуна.
         // Макет создается с помощью фабрики макетов с помощью текстового шаблона.
 
@@ -210,22 +153,19 @@ const YMap = () => {
                 '<ul class="cd-item-action">' +
                 '<li>' +
                 '<button id="buttun1" class="add-to-cart1" disabled>Add to cart</button>' +
-                '<button id="buttun2" class="add-to-cart2">Add to cart</button>' +
+                (marker.id === 2 && showButton2 ? '<button id="buttun2" class="add-to-cart2">Add to cart</button>' : '') +
                 '<button id="buttun3" class="add-to-cart3">Add to cart</button>' +
                 '</li>' +
                 '</ul>' +
                 '</div>' +
                 '</div>'
             );
-
-            ymaps.layout.storage.add('tinko#officeslayout', balloonContentLayout);
         var placemark = new ymaps.Placemark(marker.coord.split(','), {
             balloonHeader: 'Заголовок балуна',
-            // balloonContent:balloonContentLayout,
-            balloonContentBodyLayout:'tinko#officeslayout',
             balloonFooter: 'Футер балуна'
         },{
             balloonShadow: true,
+            balloonContentLayout: balloonContentLayout,
             // balloonLayout: balloonContentBody,
             // Запретим замену обычного балуна на балун-панель.
             // Если не указывать эту опцию, на картах маленького размера откроется балун-панель.
@@ -234,10 +174,17 @@ const YMap = () => {
         });
         // Добавим метку на карту.
         mapRef.current.geoObjects.add(placemark);
-            // document.getElementById("buttun2").disabled = false;
-            // document.getElementById("buttun2").setAttribute('disabled','true')
+            // document.getElementById("buttun2").removeAttribute("disabled");
+            if (marker.id === 2) {
+                setShowButton2(true);
+            }else {
+                setShowButton2(false);
+            }
+            // document.getElementById("buttun3").disabled = true; ;
         });
     }
+    const [showButton2, setShowButton2] = useState(false);
+
     const onMapClick = (e) => {
         var objectId = e.get('id')
         console.log(objectId)
@@ -248,11 +195,11 @@ const YMap = () => {
                 if (placemarkRef.current) {
                 placemarkRef.current.geometry.setCoordinates(coords);
             } else {
-                placemarkRef.current = createPlacemark(coords);            
+                placemarkRef.current = createPlacemark(coords);
                 mapRef.current.geoObjects.add(placemarkRef.current);
                 placemarkRef.current.events.add("dragend", function () {
                     getAddress(placemarkRef.current.geometry.getCoordinates());
-                });                
+                });
             }
             getAddress(coords);
         }
@@ -275,9 +222,9 @@ const YMap = () => {
         setShow2(false);
     }
     const handleShow2 = () => {
-        setShow2(true);
+        // setShow2(true);
+        alert("asdasd")
     }
-
 
     return (
         <div>
@@ -289,10 +236,9 @@ const YMap = () => {
                     center: [55.751574, 37.573856],
                     zoom: 9
                 }}
-                     // modules={["Clusterer","Polygon","GeoObject","geoQuery","control.ZoomControl", "control.FullscreenControl","Placemark", "geocode",
-                     //     "geoObject.addon.balloon","borders", "ObjectManager",'geoObject.addon.balloon','clusterer.addon.balloon',
-                     //     'templateLayoutFactory']}
-                     modules={['templateLayoutFactory']}
+                     modules={["Clusterer","Polygon","GeoObject","geoQuery","control.ZoomControl", "control.FullscreenControl","Placemark", "geocode",
+                         "geoObject.addon.balloon","borders", "ObjectManager",'geoObject.addon.balloon','clusterer.addon.balloon',
+                         'templateLayoutFactory']}
                      style={{
                          flex: 2,
                          height: "calc(100vh - 57px)"
@@ -301,11 +247,13 @@ const YMap = () => {
                      instanceRef={mapRef}
                      onLoad={ymaps => setYmaps(ymaps)}
                      state={mapState}
-                     width={"100%"} height={"100%"}
                 >
                     <Button  onClick={sayHello} data={{ content: 'Button' }} options={{ float: 'right' }} />
                     <Button  onClick={addMarkers} data={{ content: 'Вывод маркеров' }} options={{ float: 'right' }} />
                 </Map>
+                {showButton2 && (
+                    <button id="buttun2" className="add-to-cart2">Add to cart</button>
+                )}
                 <Modal show={show2} onHide={handleClose2}>
                     <Modal.Header closeButton className="backcolorBlack">
                         <Modal.Title>Edit Message</Modal.Title>
