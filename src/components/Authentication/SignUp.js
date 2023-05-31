@@ -16,11 +16,11 @@ async function signup(credentials) {
             email: credentials['email'],
             password: credentials['password']
         }
-        alert("Register successfully")
+        alert("Успешно регистрирация")
 
         return loginUser(loginCredentials);
     }).catch(function (err) {
-        alert("This email is using by another user.");
+        alert("Это почта используется другим пользователем.");
     });
 
 }
@@ -42,22 +42,23 @@ export default function SignUp({setUser}) {
 
     return (
         <div className="login-wrapper">
-            <h1>Please Sign up</h1>
+            <h1>Регистрация</h1>
             <form onSubmit={handleSubmit}>
                 <label>
-                    <p>Username</p>
+                    <p>Имя</p>
                     <input type="text" onChange={e => setUsername(e.target.value)}/>
                 </label>
                 <label>
-                    <p>Email</p>
+                    <p>Почта</p>
                     <input type="text" onChange={e => setEmail(e.target.value)}/>
                 </label>
                 <label>
-                    <p>Password</p>
+                    <p>Пароль</p>
                     <input type="password" onChange={e => setPassword(e.target.value)}/>
                 </label>
                 <div>
-                    <button type="submit">Submit</button>
+
+                    <button type="submit" style={{ width: "160px" }}>Зарегистрироваться</button>
                 </div>
             </form>
         </div>

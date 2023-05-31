@@ -1,4 +1,3 @@
-import Header from './components/Header'
 import useUser from "./components/Util/User/useUser"
 import YMap from './components/YmapTest'
 import React,{useState} from 'react'
@@ -7,9 +6,10 @@ import AuthenticatePage from "./components/Authentication/AuthenticationPage";
 import Profile from './components/profile/Profile'
 import Trigger from "./components/Trigger";
 import MarkerInformationCreate from "./components/MarkerInformationCreate";
+import Chat from "../src/components/сhat/Chat"
 
 function App() {
-const {user, setUser} = useUser();
+    const {user, setUser} = useUser();
     const [mdlShow, setMdlShow] = useState(false);
     const mdlClose = () => setMdlShow(false);
   return (
@@ -19,8 +19,9 @@ const {user, setUser} = useUser();
                 <Route path="/" element={<YMap/>}> </Route>
                 <Route path="/login" element={<AuthenticatePage setUser={setUser}/>} />
                 <Route path="/profile" element={<Profile/>}> </Route>
-                <Route path="/module" element={<Trigger show={mdlShow} onHide={mdlClose} />}> </Route>
-                <Route path="/createMarkerDescription/:data" element={<MarkerInformationCreate/>}> </Route>
+                <Route path="/chat/:data" element={<Chat/>}> </Route>
+                <Route path="/module" element={<Trigger show={true} onHide={mdlClose} />}> </Route>
+                <Route path="/createMarkerDescription/:object" element={<MarkerInformationCreate/>}> </Route>
             </Routes>
         </Router>
     </div>

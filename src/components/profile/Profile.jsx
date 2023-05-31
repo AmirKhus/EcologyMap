@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 // import "bootstrap/dist/css/bootstrap.css";
+import {BrowserRouter as Router, Routes, Route, Outlet, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {connect} from "react-redux";
 import Feed from "./listMarker/ListMarker";
@@ -15,9 +16,9 @@ function Profile(props) {
     const [currentUser, setCurrentUser] = useState({});
     const [userToEdit, setUserToEdit] = useState({
         id: 0,
-        fullName: "",
+        fullName: JSON.parse(localStorage.getItem('user')).username,
         ava: "",
-        email: "",
+        email: JSON.parse(localStorage.getItem('user')).email,
         password: "",
         roles: []
     });
@@ -33,7 +34,7 @@ function Profile(props) {
     //
     //     fetchData();
     // }, [isBuild]);
-
+    var jsonObject = JSON.parse(localStorage.getItem('user'));
     const [show2, setShow2] = useState(false);
     const handleClose2 = () => {
         setShow2(false);
@@ -54,25 +55,25 @@ function Profile(props) {
                         <img src="https://i.ytimg.com/vi/eKNN3iQkw5U/maxresdefault.jpg" alt="" className="profile__image"/>
                     </div>
                     <div className="col-8">
-                        <h3 className="profile__fullname">"fullname"</h3>
-                        <h5>Email: Email</h5>
+                        <h3 className="profile__fullname">Username: {jsonObject.username}</h3>
+                        <h5>Email: {jsonObject.email}</h5>
                         {/*<Link to={`/profile/:userId`} style={{textDecoration:"none"}}>*/}
                         {/*    Edit profile*/}
                         {/*</Link>*/}
 
-                        {/*<button className="btn" onClick={(e) => {*/}
-                        {/*    setUserToEdit({*/}
-                            {/*        ...userToEdit,*/}
-                            {/*        id: currentUser.id,*/}
-                        {/*        fullName: currentUser.fullName,*/}
-                        {/*        email: currentUser.email,*/}
-                        {/*        ava: currentUser.ava,*/}
-                        {/*        roles: currentUser.roles,*/}
-                        {/*        password: currentUser.password*/}
-                        {/*    });*/}
-                        {/*    handleShow2();*/}
-                        {/*}}>Edit profile*/}
-                        {/*</button>*/}
+                        <button className="btn" onClick={(e) => {
+                            setUserToEdit({
+                                    ...userToEdit,
+                                    id: currentUser.id,
+                                fullName: jsonObject.username,
+                                email: jsonObject.email,
+                                ava: currentUser.ava,
+                                roles: currentUser.roles,
+                                password: currentUser.password
+                            });
+                            handleShow2();
+                        }}>Edit profile
+                        </button>
                     </div>
                 </div>
                 <hr/>
@@ -81,29 +82,15 @@ function Profile(props) {
             {/*edit modal*/}
             <Modal show={show2} onHide={handleClose2}>
                 <Modal.Header closeButton className="backcolorBlack">
-                    <Modal.Title>Edit Message</Modal.Title>
+                    <Modal.Title>Изменение данных</Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="backcolorBlack">
                     <form>
                         <div className="form-group">
-                            <label>[Full Name]:</label>
-                            <input type="text" className="form-control" placeholder="User Full Name..."
+                            <label>Имя пользователя</label>
+                            <input type="text" className="form-control"
                                    value={userToEdit.fullName} onChange={(e) => {
                                 setUserToEdit({...userToEdit, fullName: e.target.value})
-                            }}/>
-                        </div>
-                        <div className="form-group">
-                            <label> Ava Picture:</label>
-                            <input type="text" className="form-control" placeholder="Ava picture url..."
-                                   value={userToEdit.ava} onChange={(e) => {
-                                setUserToEdit({...userToEdit, ava: e.target.value})
-                            }}/>
-                        </div>
-                        <div className="form-group">
-                            <label> Email:</label>
-                            <input type="email" className="form-control" placeholder="Email..."
-                                   value={userToEdit.email} onChange={(e) => {
-                                setUserToEdit({...userToEdit, email: e.target.value})
                             }}/>
                         </div>
                         {/*<div className="form-group">*/}

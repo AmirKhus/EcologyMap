@@ -1,7 +1,7 @@
-button {
+#loginButton, #profileButton {
     --b: 3px;   /* border thickness */
     --s: .15em; /* size of the corner */
-    --c: #BD5532;
+    --c: #20e80e;
     
     padding: calc(.05em + var(--s)) calc(.3em + var(--s));
     color: var(--c);
@@ -13,18 +13,18 @@ button {
     outline: var(--b) solid #0000;
     outline-offset: .2em;
   }
-  button:hover,
-  button:focus-visible{
+#loginButton:hover, #profileButton:hover,
+#loginButton:focus-visible, #profileButton:focus-visible{
     --_p: 0px;
     outline-color: var(--c);
     outline-offset: .05em;
   }
-  button:active {
+#loginButton:active , #profileButton:active {
     background: var(--c);
     color: #fff;
   }
-  
-  button {
+
+#loginButton, #profileButton {
     font-family: system-ui, sans-serif;
     font-weight: bold;
     font-size: 4rem;
@@ -39,3 +39,12 @@ button {
     transform: translate(0, -30%);
     font-size: 1.5rem;
   }
+
+    #profileButton{
+        position: absolute;
+        right: 120px;
+        transform: translate(0, -30%);
+        font-size: 1.5rem;
+        width: 249px;
+    }
+

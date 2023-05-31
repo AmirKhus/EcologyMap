@@ -1,0 +1,132 @@
+import React from "react";
+import { useLocation } from 'react-router-dom';
+// import "./EditPostForm.css";
+import CancelIcon from "@material-ui/icons/Cancel";
+import { useEffect, useState } from "react";
+import "./test.css"
+
+const MarkerInformationCreate = () => {
+    const [markerImg, setMarkerImg] = useState('')
+    const [selectedType, setSelectedType] = useState('');
+    const [description, setDescription] = useState('');
+    const [postTitle, setPostTitle] = useState('');
+    const [postDesc, setPostDesc] = useState()
+    const [markerInfo, setMarkerInfo] = useState(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const data = params.get('data');
+
+        if (data) {
+            const deserializedMarkerInfo = JSON.parse(decodeURIComponent(data)); // Восстановление объекта из строки
+            setMarkerInfo(deserializedMarkerInfo);
+            console.log(deserializedMarkerInfo)
+        }
+    }, []);
+
+    const handlePostTitleChange = (e) => {
+        const selectedValue = event.target.value;
+        setMarkerImg(e.target.value)
+        setSelectedType(selectedValue);
+        console.log(postTitle)
+    };
+
+    const handleMarkerImgChange = (e) => {
+        setMarkerImg(e.target.value)
+    };
+
+    const handleDescription = (e) => {
+        setPostDesc(e.target.value)
+        setDescription(e.target.value)
+    };
+
+
+
+    const savePost = (e) => {
+        console.log(description)
+        console.log(selectedType)
+        console.log(markerInfo.id)
+        // e.preventDefault()
+        const post = {
+            id: markerInfo.id,
+            type: markerInfo.type,
+            description: markerInfo.description
+        }
+        //
+        // props.editBlogPost(post);
+        // props.handleEditFormHide()
+    }
+
+    // useEffect(() => {
+    //     const handleEscape = (e) => {
+    //         if (e.key === "Escape") {
+    //             props.handleEditFormHide();
+    //         }
+    //     };
+    //     window.addEventListener('keyup', handleEscape)
+    //
+    //     return () => window.removeEventListener('keyup', handleEscape)
+    // }, [props])
+
+    // const handleEditFormHide = props.handleEditFormHide;
+    const wasteTypes = ["Пластик", "Стекло", "Бумага", "Металл"];
+    return (
+        <>
+            <form className="editPostForm" onSubmit={savePost}>
+                <button className="hideBtn">
+                    <CancelIcon />
+                </button>
+                <h2>Маркер</h2>
+                <div>
+                    <input
+                        className="editFormInput"
+                        type="file"
+                        name="markerImg"
+                        accept="image/*"
+                        onChange={handleMarkerImgChange}
+                    />
+                </div>
+
+                <div>
+                    <select
+                        className="editFormInput"
+                        name="postTitle"
+                        value={markerInfo && markerInfo.type} // Add null check for markerInfo.type
+                        onChange={handlePostTitleChange}
+                        required
+                    >
+                        <option value="">Выберите тип мусора</option>
+                        {wasteTypes.map((type, index) => (
+                            <option key={index} value={type}>
+                                {type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+          <textarea
+              className="editFormInput"
+              name="postDescription"
+              placeholder="Описание экологической проблемы"
+              value={markerInfo && markerInfo.description} // Add null check for markerInfo.description
+              onChange={handleDescription}
+              rows={8}
+              required
+          />
+                </div>
+                <div>
+                    <button className="blackBtn" type="submit">
+                        Сохранить
+                    </button>
+                    <button className="blackBtn" type="submit">
+                        Удалить
+                    </button>
+                </div>
+            </form>
+            {/*<div onClick={handleEditFormHide} className="overlay"></div>*/}
+        </>
+    );
+};
+
+export default MarkerInformationCreate;

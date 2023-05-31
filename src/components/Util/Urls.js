@@ -6,3 +6,4 @@ export const USERS = HOST + '/users';
 export const MESSAGES = HOST + '/messages'
 export const CHAT = "/app/chat"
 export const WEBSOCKET = HOST + "/ws"
+export const MARKER = HOST + USERS + '/marker'

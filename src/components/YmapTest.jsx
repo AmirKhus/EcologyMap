@@ -7,10 +7,14 @@ import ReactDOM from 'react-dom';
 import ReactDOMServer from 'react-dom/server';
 import POINTS from './points';
 import "./YmapTest.css"
+import {Link } from "react-router-dom";
+import {loadMarker, loadMessages} from "./Util/Requests";
+import {MARKER, USERS} from "./Util/Urls";
+import axios from "axios";
 
 const mapState = {
     center: [55.751574, 37.573856],
-    zoom: 1
+    zoom: 4
 };
 
 const YMap = () => {
@@ -18,13 +22,17 @@ const YMap = () => {
     const mapRef = useRef(null);
     const [address, setAddress] = useState("");
     const [count, setCount] = useState(1);
+    const [countRegion, setCountRegion] = useState(1);
     const [canAddPlacemark, setCanAddPlacemark] = useState(false);
+    const [canShowRegion, setCanShowRegion] = useState(false);
     const [ymaps, setYmaps] = useState(null);
     const [openedDescription, openDescription] = useState(null);
     const [clusterBalloon, setClusterBalloon] = useState(null);
     const [canAddMarker, setCanAddMarker] = useState(false);
+    const [canOpenChat, setCanOpenChat] = useState(false);
     const [oldRegionName, addOldRegionName] = useState();
     const [oldRegion, addOldRegion] = useState();
+    const [marker, setMarkers] = useState();
 
     useEffect(() => {
         if (document.getElementById('balloon') && clusterBalloon) {
@@ -39,6 +47,31 @@ const YMap = () => {
         }
     }, [clusterBalloon, openedDescription]);
 
+    // useEffect(() => {
+    //
+    //     axios.get("http://localhost:8080/users/marker").then((response) => {
+    //         sessionStorage.setItem('activeContact', JSON.stringify(response.data[0]))
+    //         setMarker(response.data)
+    //         console.log("datadatadatadata",response.data)
+    //         //id пользователя data
+    //         // setActiveContact(response.data[0])
+    //         // setActiveContact(response.data.find(obj => obj.email === data))
+    //         console.log()
+    //     }).catch(function (err) {
+    //         alert(err);
+    //     });
+    // }, []);
+
+    useEffect(() => {
+        axios.get('http://localhost:8080/users/marker')
+            .then(response => {
+                setMarkers(response.data);
+                console.log(response.data)
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+    }, []);
     const getLayout = (Component, props) => {
         if (ymaps) {
             const html = ReactDOMServer.renderToString(<Component {...props} />);
@@ -70,7 +103,11 @@ const YMap = () => {
                         const element = this.getParentElement().getElementsByClassName(
                             'placemark',
                         )[0];
+                        // Если метка выбрана, то увеличим её размер.
                         const size = this.isActive ? 60 : 34;
+                        // При задании для метки своего HTML макета, фигуру активной области
+                        // необходимо задать самостоятельно - иначе метка будет неинтерактивной.
+                        // Создадим фигуру активной области "Круг".
                         const smallShape = {
                             type: 'Circle',
                             coordinates: [0, 0],
@@ -81,10 +118,12 @@ const YMap = () => {
                             coordinates: [0, -30],
                             radius: size / 2,
                         };
+                        // Зададим фигуру активной области.
                         this.getData().options.set(
                             'shape',
                             this.isActive ? bigShape : smallShape,
                         );
+                        // Если метка выбрана, то зададим класс и запустим анимацию.
                         if (this.isActive) {
                             element.classList.add('active');
                             element.style.animation = '.35s show-big-placemark';
@@ -95,6 +134,7 @@ const YMap = () => {
                         if (!this.inited) {
                             this.inited = true;
                             this.isActive = false;
+                            // При клике по метке будем перестраивать макет.
                             this.getData().geoObject.events.add(
                                 'click',
                                 function() {
@@ -113,27 +153,25 @@ const YMap = () => {
         return null;
     };
 
-    const openCluster = (e) => {
+    const openCluster = e => {
         const cluster = e.get('cluster');
         if (cluster) {
-            if (!clusterBalloon) {
-                setClusterBalloon(
-                    cluster.state.get('activeObject').properties.getAll()
-                );
-            }
+            const activeObject = cluster.state.get('activeObject');
 
-            cluster.state.events.add('change', () => {
-                const activeObject = cluster.state.get('activeObject');
-                if (
-                    !clusterBalloon ||
-                    (clusterBalloon &&
-                        activeObject.properties.getAll().index !== clusterBalloon.index)
-                ) {
-                    setClusterBalloon(activeObject.properties.getAll());
-                }
-            });
+            if (
+                !clusterBalloon ||
+                (clusterBalloon &&
+                    activeObject.properties.getAll().index !== clusterBalloon.index)
+            ) {
+                setClusterBalloon(activeObject.properties.getAll());
+                openDescription(activeObject.properties.getAll().index);
+
+                // Automatically open the balloon for the active object
+                cluster.balloon.open(activeObject);
+            }
         }
     };
+
 
     const closeDescription = () => {
         setClusterBalloon(null);
@@ -166,9 +204,13 @@ const YMap = () => {
             ]
                 .filter(Boolean)
                 .join(", ");
-
             setAddress(newAddress);
-            const markerInfo = 'Привет,олень! Мамке Салют';
+            const markerInfo = {
+                id: null,
+                coord: "["+coords.toString()+"]"
+            };
+            const serializedMarkerInfo = encodeURIComponent(JSON.stringify(markerInfo));
+
             placemarkRef.current.properties.set({
                 iconCaption: newAddress,
                 // balloonContentHeader: "одержимое заголовка балуна геообъекта",
@@ -177,75 +219,83 @@ const YMap = () => {
                 // balloonContent: firstGeoObject.getAddressLine()
                 // balloonContentBody: '<a to=`http://localhost:3000/createMarkerDescription/${data}`>+7 (123) 456-78-90</a>'
              // balloonContent: '<a href={`/createMarkerDescription/${data}`}>Перейти к дочернему компоненту</a>'
-                balloonContent: `<a href="/createMarkerDescription/${markerInfo}">Перейти к дочернему компоненту</a>`
+             //    balloonContent: `<a href="/createMarkerDescription/${markerInfo}">Перейти к дочернему компоненту</a>`
+                balloonContent: `<a href="/createMarkerDescription/object?data=${serializedMarkerInfo}">Перейти к дочернему компоненту</a>`
             });
             regionName =firstGeoObject.getAdministrativeAreas()[0];
         })
-        // тут рисутся регионы
-        ymaps.borders.load('RU').then(function (geojson) {
-            addOldRegionName(regionName)
-            for (var i = 0; i < geojson.features.length; i++) {
-                if(geojson.features[i].properties.name && geojson.features[i].properties.name === oldRegionName){
-                    mapRef.current.geoObjects.remove(oldRegion);
-                }
-                if (geojson.features[i].properties.name && geojson.features[i].properties.name === regionName) {
-                    var polygon = new ymaps.Polygon([
-                        geojson.features[i].geometry.coordinates[0]
-                    ], {
-                        hintContent: "MyPoligon"
-                    }, {
-                        fillColor: '#6699ff',
-                        interactivityModel: 'default#transparent',
-                        strokeWidth: 8,
-                        opacity: 0.5
-                    });
+        if(canOpenChat || canShowRegion) {
+            // тут рисутся регионы
+            ymaps.borders.load('RU').then(function (geojson) {
+                addOldRegionName(regionName)
+                for (var i = 0; i < geojson.features.length; i++) {
+                    if (geojson.features[i].properties.name && geojson.features[i].properties.name === oldRegionName) {
+                        mapRef.current.geoObjects.remove(oldRegion);
+                    }
+                    if (geojson.features[i].properties.name && geojson.features[i].properties.name === regionName) {
+                        if (canOpenChat) {
+                            openMessager(geojson.features[i].properties.name);
+                        }
+                        var polygon = new ymaps.Polygon([
+                            geojson.features[i].geometry.coordinates[0]
+                        ], {
+                            hintContent: "MyPoligon"
+                        }, {
+                            fillColor: '#6699ff',
+                            interactivityModel: 'default#transparent',
+                            strokeWidth: 8,
+                            opacity: 0.5
+                        });
 
-                    mapRef.current.geoObjects.add(polygon);
-                    addOldRegion(polygon)
+                        mapRef.current.geoObjects.add(polygon);
+                        addOldRegion(polygon)
+                    }
                 }
-            }
-        }) .catch(function (error) {
-            console.error(error);
-        });
+            }).catch(function (error) {
+                console.error(error);
+            });
+        }
     };
 
-    const markers = [ {
-        "coord": "55.79424260833246,49.68814042729016",
-        "id": 1,
-        "author": "Amir",
-        "type": "Мусор",
-        "description": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
-        "evaluation": 10,
-        "date":"2001-01-01"
+
+    const markers = [
+        {
+        coords: [55.79424260833246,49.68814042729016],
+        id: 1,
+        author: "q@q",
+        type: "Мусор",
+        description: "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
+        rating: 10,
+        date:"2001-01-01"
     },
         {
-            "coord": "55.62832515119459, 49.11135820072768",
-            "id": 2,
-            "author": "Amir",
-            "type": "Мусор",
-            "description": "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla",
-            "evaluation": 10,
-            "date":"2001-01-01"
+            coords: [55.62832515119459, 49.11135820072768],
+            id: 2,
+            author: "Amir",
+            type: "Мусор",
+            description: "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla",
+            rating: 10,
+            date:"2001-01-01"
         },
         {
-            "coord": "55.910118447321, 48.70761064213393",
-            "id": 3,
-            "author": "Amir",
-            "type": "Мусор",
-            "description": "et iusto sed quo iure\nvoluptatem occaecati omnis eligendi aut ad\nvoluptatem doloribus vel accusantium quis pariatur\nmolestiae porro eius odio et labore et velit aut",
-            "evaluation": 10,
-            "date":"2001-01-01"
+            coords: [55.910118447321, 48.70761064213393],
+            id: 3,
+            author: "Amir",
+            type: "Мусор",
+            description: "et iusto sed quo iure\nvoluptatem occaecati omnis eligendi aut ad\nvoluptatem doloribus vel accusantium quis pariatur\nmolestiae porro eius odio et labore et velit aut",
+            rating: 10,
+            date:"2001-01-01"
         }
     ]
 
-    const addMarkers = () => {
-        setCanAddMarker(!canAddMarker);
-    };
+    // const addMarkers = () => {
+    //     setCanAddMarker(!canAddMarker);
+    // };
 
     const onMapClick = (e) => {
         var objectId = e.get('id')
         console.log(objectId)
-        if (canAddPlacemark){
+        if (canAddPlacemark || canOpenChat || canShowRegion){
             let objectManager = new ymaps.ObjectManager();
             objectManager.options.set('geoObjectInteractivityModel', 'default#transparent');
             const coords = e.get("coords");
@@ -258,26 +308,42 @@ const YMap = () => {
                     getAddress(placemarkRef.current.geometry.getCoordinates());
                 });
             }
-            console.log(coords)
+            // console.log(address)
             getAddress(coords);
         }
     };
 
-    const sayHello = () => {
-        setCount(count + 1);
-        setCanAddPlacemark(count % 2 !== 0);
-        for (let i = 0; i < POINTS.length; i++) {
-            console.log(POINTS[i].coords[0]+POINTS[i].coords[1]);
+    const addMarker = () => {
+        if(localStorage.getItem('user')!== null){
+            setCount(count + 1);
+            setCanAddPlacemark(count % 2 !== 0);
+        }else{
+            alert("Для добавления маркера Вам необходимо войти под своей учетной записью или зарегистрироваться!")
         }
-
     };
 
-    const handleClose2 = () => {
-        setShow2(false);
+
+    const showRegion = () => {
+        setCountRegion(countRegion + 1);
+        setCanShowRegion(countRegion % 2 !== 0);
     };
 
-    const handleShow2 = () => {
-        setShow2(true);
+
+    const openChat = (name) => {
+        if(localStorage.getItem('user')!== null){
+            setCanOpenChat(true);
+        }else{
+            alert("Для открытия чата Вам необходимо войти под своей учетной записью или зарегистрироваться!")
+        }
+    };
+
+    const openMessager = (address) => {
+        if (canOpenChat) {
+            setCanOpenChat(false)
+            // console.log("addressaddressaddress",address)
+            window.location.href=`http://localhost:3000/chat/${address}`;
+        }
+        // console.log("addressaddressaddressaddress"+address)
     };
 
     return (
@@ -315,18 +381,18 @@ const YMap = () => {
                             clusterBalloonItemContentLayout: getLayout(InnerLayout, {
                                 openedDescription,
                                 openDescription,
-                                ...clusterBalloon
-                            })
+                                ...clusterBalloon,
+                            }),
                         }}
                         onBalloonOpen={openCluster}
                         onBalloonClose={closeDescription}
                     >
-                        {POINTS.map((point, index) => (
+                        {Array.isArray(marker) && marker.map((point, index) => (
                             <Placemark
                                 key={index}
-                                geometry={point.coords}
+                                geometry={JSON.parse(point.coord)}
                                 properties={{
-                                    balloonContentHeader: point.title,
+                                    balloonContentHeader: point.type,
                                     point,
                                     index
                                 }}
@@ -338,21 +404,27 @@ const YMap = () => {
                                         openedDescription,
                                         openDescription,
                                     }),
-                                    // balloonPanelMaxMapArea: Infinity
                                 }}
                             />
                         ))}
                     </Clusterer>
+
                     <Button
-                        onClick={sayHello}
-                        data={{ content: "Button" }}
+                        onClick={addMarker}
+                        data={{ content: "Маркер" }}
                         options={{ float: "right" }}
                     />
+
                     <Button
-                        onClick={addMarkers}
-                        data={{ content: "Вывод маркеров" }}
+                        onClick={showRegion}
+                        data={{ content: "Регионы" }}
                         options={{ float: "right" }}
                     />
+                        <Button
+                            onClick={openChat}
+                            data={{ content: "Чат" }}
+                            options={{ float: "right" }}
+                        />
                 </Map>
             </YMaps>
         </div>

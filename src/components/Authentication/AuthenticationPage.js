@@ -8,8 +8,8 @@ export default function AuthenticatePage({setUser}) {
 
     return (<div>
         <div className={"auth_container"}>
-            <button className={"login"} onClick={() => setValue("login")}>Login</button>
-            <button className={"signup"} onClick={() => setValue("signup")}>SignUp</button>
+            <button className={"login"} onClick={() => setValue("login")}>Войти</button>
+            <button className={"signup"} onClick={() => setValue("signup")}style={{ width: "108px" }}>Регистрация</button>
         </div>
         {<div style={{paddingTop: 40}}>{
             value == "login" ? <Login  setUser={setUser}/> : <SignUp setUser={setUser}/>

@@ -12,6 +12,7 @@ function ListMarker(userEmail) {
 
     console.log(", userEmail: " + userEm );
     const [isAdded, setIsAdded] = useState(false);
+    const [marker, setMarkers] = useState();
 
     const [addPost, setPost] = useState({
         postTitle: "",
@@ -41,17 +42,25 @@ function ListMarker(userEmail) {
     useEffect(()=>{
         async function fetchData(){
             let request = "";
-            console.log(authh.user.jwtToken)
-            axios.defaults.headers.common[
-                "Authorization"
-                ] = `Bearer ${authh.user.jwtToken}`;
-            if(root==="home"){
-
-                request = await axios.get(requests.news);
-            }
-            else if(root ==="userNews"){
-                request = await axios.get(requests.getUserNews+ userEm);
-            }
+            // console.log(authh.user.jwtToken)
+            // axios.defaults.headers.common[
+            //     "Authorization"
+            //     ] = `Bearer ${authh.user.jwtToken}`;
+            // if(root==="home"){
+            //
+            //     request = await axios.get(requests.news);
+            // }
+            // else if(root ==="userNews"){
+            //     request = await axios.get(requests.getUserNews+ userEm);
+            // }
+            axios.get('http://localhost:8080/users/get_user_marker/'+ JSON.parse(localStorage.getItem('user')).username)
+                .then(response => {
+                    setMarkers(response.data);
+                    console.log(response.data)
+                })
+                .catch(error => {
+                    console.log('Error:', error);
+                });
             // switch (sourc) {
             //   case "home":
             //     console.log("homega keldi");
@@ -66,12 +75,21 @@ function ListMarker(userEmail) {
             setPosts(request.data);
             posts.map((post)=>(
                 console.log("posts: " + post.postTitle)
-
             ))
             // console.log("posts: " + posts);
         }
         fetchData();
     },[isAdded]);
+    // useEffect(() => {
+    //     axios.get('http://localhost:8080/users/get_user_marker/'+ JSON.parse(localStorage.getItem('user')).username)
+    //         .then(response => {
+    //             setMarkers(response.data);
+    //             console.log(response.data)
+    //         })
+    //         .catch(error => {
+    //             console.log('Error:', error);
+    //         });
+    // }, []);
 const markers = [ {
     "userId": 1,
     "id": 1,
@@ -111,14 +129,14 @@ const markers = [ {
     ]
     return (
         <div className="feed">
-            {markers.map((post) => (
+            {Array.isArray(marker) && marker.map((post) => (
 
                 <Post
-                    key={post.userId}
+                    // key={post.userId}
                     profilePic={post.id}
-                    username={post.title}
+                    point={post}
                     image={"https://camo.githubusercontent.com/f481cb01507ba595c95e6c24e88d17976d7263be19bb02d19135793b12fb32be/68747470733a2f2f7062732e7477696d672e636f6d2f6d656469612f44786e72375944585141417a57467a2e6a7067"}
-                    message={'post.postTitle'}
+                    // message={'post.postTitle'}
                 />
             )).reverse()}
         </div>
