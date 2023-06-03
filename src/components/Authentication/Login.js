@@ -28,7 +28,8 @@ export default function Login({setUser}) {
             password
         });
         setUser(user);
-        // window.location.replace("http://localhost:3000");
+
+        window.location.replace("http://localhost:3000");
     }
 
     return (

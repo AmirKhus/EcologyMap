@@ -13,8 +13,8 @@ import {MARKER, USERS} from "./Util/Urls";
 import axios from "axios";
 
 const mapState = {
-    center: [55.751574, 37.573856],
-    zoom: 4
+    center: [55.809241, 49.227624],
+    zoom: 9
 };
 
 const YMap = () => {
@@ -33,6 +33,8 @@ const YMap = () => {
     const [oldRegionName, addOldRegionName] = useState();
     const [oldRegion, addOldRegion] = useState();
     const [marker, setMarkers] = useState();
+    const [numberMarkers, setNumberMarkers] = useState(0);
+
 
     useEffect(() => {
         if (document.getElementById('balloon') && clusterBalloon) {
@@ -192,6 +194,7 @@ const YMap = () => {
     };
 
     let regionName = "";
+    let mapStat = [];
     const getAddress = async (coords) => {
         placemarkRef.current.properties.set("iconCaption", "loading..");
         await ymaps.geocode(coords).then((res) => {
@@ -241,14 +244,30 @@ const YMap = () => {
                         ], {
                             hintContent: "MyPoligon"
                         }, {
-                            fillColor: '#6699ff',
                             interactivityModel: 'default#transparent',
                             strokeWidth: 8,
                             opacity: 0.5
                         });
-
                         mapRef.current.geoObjects.add(polygon);
                         addOldRegion(polygon)
+                        let numberMarkers = 0; // Объявление numberMarkers до цикла for
+
+                        for (let i = 0; i < marker.length; i++) {
+                            const json = marker[i];
+                            console.log(json.coord);
+                            console.log(polygon.geometry.contains(JSON.parse(json.coord)));
+                            if (polygon.geometry.contains(JSON.parse(json.coord))) {
+                                numberMarkers += 1; // Исправлено на numberMarkers += 1
+                            }
+                            console.log(numberMarkers);
+                        }
+
+                        if (numberMarkers > 0 && numberMarkers <= 3)
+                            polygon.options.set('fillColor', '#00ff00');
+                        else if (numberMarkers > 3 && numberMarkers <= 5)
+                            polygon.options.set('fillColor', '#ffa500');
+                        else if (numberMarkers > 6)
+                            polygon.options.set('fillColor', '#ff0000');
                     }
                 }
             }).catch(function (error) {
@@ -326,6 +345,9 @@ const YMap = () => {
     const showRegion = () => {
         setCountRegion(countRegion + 1);
         setCanShowRegion(countRegion % 2 !== 0);
+        if(canShowRegion){
+            mapRef.current.geoObjects.remove(oldRegion);
+        }
     };
 
 

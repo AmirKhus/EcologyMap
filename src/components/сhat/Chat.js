@@ -30,6 +30,8 @@ const Chat = (props) => {
     useEffect(() => {
         axios.get(USERS + '/friends', {headers: headers}).then((response) => {
             sessionStorage.setItem('activeContact', JSON.stringify(response.data[0]))
+            // console.log("response.data[0]",json)
+            console.log("response.data[0]",response.data[0])
             setContacts(response.data)
             setActiveContact(response.data.find(obj => obj.email === data))
             connect()
@@ -102,10 +104,10 @@ const Chat = (props) => {
         if (text !== "") {
             var message = {
                 text: text,
-                sender: {id: user['id'], email: user['email']},
-                target: {id: activeContact['id'], email: activeContact['email']}
+                sender: {id: user['id'], email: user['email'], username: user['username']},
+                target: {id: activeContact['id'], email: activeContact['email'],username: activeContact['username']}
             }
-
+            console.log("messmessagemessageage",message)
 
             messages.push(message)
             setMessages(messages);
@@ -119,12 +121,14 @@ const Chat = (props) => {
 
     const handleSetCurrentChat = (chat) => {
         sessionStorage.setItem('activeContact', JSON.stringify(chat))
+        console.log("asdasdasdasdasd",chat)
         setActiveContact(chat)
     }
 
     return (<div style={{marginTop:50}}>
             <div id={"contacts"}>
-                <ul>
+
+                <ul style={{marginLeft: "-34px"}}>
                     {contacts ? contacts.map((e) => {
                         const isSelected = activeContact.id == e.id;
                         return <UserItem isSelected={isSelected} setChat={handleSetCurrentChat} chat={e}/>
@@ -133,7 +137,7 @@ const Chat = (props) => {
                 </ul>
             </div>
             <div id={"messages"}>
-                <ul>
+                <ul style={{marginLeft: "-36px"}}>
                     {messages ? messages.map((e) => {
                         const isMine = e.sender.id == user.id;
                         return <MessageItem isMine={isMine} message={e}/>

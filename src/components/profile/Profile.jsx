@@ -7,6 +7,12 @@ import Feed from "./listMarker/ListMarker";
 import axios from "../Util/markerList/axios";
 import {Button, Modal} from "react-bootstrap";
 import "./Profile.css"
+import {loadMessages, getToken,getUsers} from "../Util/Requests";
+
+import {USERS} from "../Util/Urls";
+import {BottomNavigation, BottomNavigationAction, Paper} from "@mui/material";
+import OneFriend from "./OneFriend";
+import useUser from "../Util/User/useUser";
 
 // import {updateNameAuthAction} from "../../redux/actions/AuthAction";
 
@@ -14,6 +20,7 @@ function Profile(props) {
     // const { auth, updateName} = props;
     const auth = localStorage.getItem('user');
     const [currentUser, setCurrentUser] = useState({});
+    const {user, setUser} = useUser();
     const [userToEdit, setUserToEdit] = useState({
         id: 0,
         fullName: JSON.parse(localStorage.getItem('user')).username,
@@ -43,7 +50,47 @@ function Profile(props) {
         setShow2(true);
     }
 
+    const [friends, setFriends] = useState([]);
+    const [notFriends, setNotFriends] = useState([]);
+    const [value, setValue] = useState(0);
+    const headers = {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Authorization": getToken(user)
+    }
 
+    useEffect(() => {
+        console.log('fasl;fjals;dfjk')
+        getUsers('/friends', setFriends, headers)
+        getUsers('/not_friends', setNotFriends, headers)
+    }, [])
+
+    function addFriend(id, index) {
+        axios.get(USERS + "/" + id + '/add_friend', {headers: headers}).then((response) => {
+            friends.push(notFriends[index])
+            setFriends(friends)
+            var dublicatedFriends = [...notFriends]
+            var part1 = dublicatedFriends.splice(0, index)
+            var part2 = notFriends.splice(index + 1)
+            setNotFriends(part1.concat(part2))
+
+        }).catch(function (err) {
+            alert("Something went wrong trying add new friend with id: " + id);
+        });
+    }
+    'MuiBottomNavigation-root css-18vub-MuiBottomNavigation-root'
+    const styles = {
+        bgcolor: '#DFDCDB',
+        color: 'black',
+        height: '22px',
+        '& .Mui-selected': {
+            '& .MuiBottomNavigationAction-label': {
+                fontWeight: 'bold',
+                color: 'black',
+                height: '22px'
+            }
+        }
+    };
     return (
         <div className="profile">
             {/*<div className="container">*/}
@@ -61,22 +108,54 @@ function Profile(props) {
                         {/*    Edit profile*/}
                         {/*</Link>*/}
 
-                        <button className="btn" onClick={(e) => {
-                            setUserToEdit({
-                                    ...userToEdit,
-                                    id: currentUser.id,
-                                fullName: jsonObject.username,
-                                email: jsonObject.email,
-                                ava: currentUser.ava,
-                                roles: currentUser.roles,
-                                password: currentUser.password
-                            });
-                            handleShow2();
-                        }}>Edit profile
-                        </button>
+                        {/*<button className="btn" onClick={(e) => {*/}
+                        {/*    setUserToEdit({*/}
+                        {/*            ...userToEdit,*/}
+                        {/*            id: currentUser.id,*/}
+                        {/*        fullName: jsonObject.username,*/}
+                        {/*        email: jsonObject.email,*/}
+                        {/*        ava: currentUser.ava,*/}
+                        {/*        roles: currentUser.roles,*/}
+                        {/*        password: currentUser.password*/}
+                        {/*    });*/}
+                        {/*    handleShow2();*/}
+                        {/*}}>Edit profile*/}
+                        {/*</button>*/}
+
+                        <div className="profile-container">
+                            <Paper sx={{position: 'fixed', bottom: 0, left: 0, right: 0}} elevation={3}>
+                                <BottomNavigation
+                                    sx={styles}
+                                    showLabels
+                                    value={value}
+                                    onChange={(event, newValue) => {
+                                        setValue(newValue);
+                                    }}
+                                >
+                                    <BottomNavigationAction label="Мои друзья"/>
+                                    <BottomNavigationAction label="Добавить друга"/>
+                                </BottomNavigation>
+                            </Paper>
+                            <div >
+                                {value == 0 ? <div>{
+                                        friends.map((item, index) => {
+                                            return <OneFriend email={item['email']} id={item['id']} index={index} isFriend={true}
+                                                              addFriend={addFriend}/>
+                                        })
+                                    }</div> :
+                                    <div>
+                                        {
+                                            notFriends.map((item, index) => {
+                                                return <OneFriend email={item['email']} id={item['id']} index={index} isFriend={false}
+                                                                  addFriend={addFriend}/>
+                                            })
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <hr/>
 
             </div>
             {/*edit modal*/}
