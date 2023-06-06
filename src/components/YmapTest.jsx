@@ -23,8 +23,8 @@ const YMap = () => {
     const [address, setAddress] = useState("");
     const [count, setCount] = useState(1);
     const [countRegion, setCountRegion] = useState(1);
-    const [canAddPlacemark, setCanAddPlacemark] = useState(false);
     const [canShowRegion, setCanShowRegion] = useState(false);
+    const [canAddPlacemark, setCanAddPlacemark] = useState(false);
     const [ymaps, setYmaps] = useState(null);
     const [openedDescription, openDescription] = useState(null);
     const [clusterBalloon, setClusterBalloon] = useState(null);
@@ -32,8 +32,9 @@ const YMap = () => {
     const [canOpenChat, setCanOpenChat] = useState(false);
     const [oldRegionName, addOldRegionName] = useState();
     const [oldRegion, addOldRegion] = useState();
-    const [marker, setMarkers] = useState();
-    const [numberMarkers, setNumberMarkers] = useState(0);
+    let [marker, setMarkers] = useState();
+    const [countStatRegion, setCountStatRegion] = useState(1);
+    const [canShowStatRegion, setCanShowStatRegion] = useState(false);
 
 
     useEffect(() => {
@@ -227,7 +228,7 @@ const YMap = () => {
             });
             regionName =firstGeoObject.getAdministrativeAreas()[0];
         })
-        if(canOpenChat || canShowRegion) {
+        if(canOpenChat || canShowRegion || canShowStatRegion) {
             // тут рисутся регионы
             ymaps.borders.load('RU').then(function (geojson) {
                 addOldRegionName(regionName)
@@ -258,6 +259,7 @@ const YMap = () => {
                             console.log(polygon.geometry.contains(JSON.parse(json.coord)));
                             if (polygon.geometry.contains(JSON.parse(json.coord))) {
                                 numberMarkers += 1; // Исправлено на numberMarkers += 1
+                                mapStat.push(marker[i])
                             }
                             console.log(numberMarkers);
                         }
@@ -266,8 +268,13 @@ const YMap = () => {
                             polygon.options.set('fillColor', '#00ff00');
                         else if (numberMarkers > 3 && numberMarkers <= 5)
                             polygon.options.set('fillColor', '#ffa500');
-                        else if (numberMarkers > 6)
+                        else if (numberMarkers >= 6)
                             polygon.options.set('fillColor', '#ff0000');
+
+                        if(canShowStatRegion){
+                            openStatRegion(mapStat)
+                            mapStat = []
+                        }
                     }
                 }
             }).catch(function (error) {
@@ -314,7 +321,7 @@ const YMap = () => {
     const onMapClick = (e) => {
         var objectId = e.get('id')
         console.log(objectId)
-        if (canAddPlacemark || canOpenChat || canShowRegion){
+        if (canAddPlacemark || canOpenChat || canShowRegion || canShowStatRegion){
             let objectManager = new ymaps.ObjectManager();
             objectManager.options.set('geoObjectInteractivityModel', 'default#transparent');
             const coords = e.get("coords");
@@ -350,6 +357,14 @@ const YMap = () => {
         }
     };
 
+    const statRegion = () => {
+        setCountStatRegion(countStatRegion + 1);
+        setCanShowStatRegion(countStatRegion % 2 !== 0);
+        if(canShowStatRegion){
+            mapRef.current.geoObjects.remove(oldRegion);
+        }
+    };
+
 
     const openChat = (name) => {
         if(localStorage.getItem('user')!== null){
@@ -367,6 +382,11 @@ const YMap = () => {
         }
         // console.log("addressaddressaddressaddress"+address)
     };
+
+    const openStatRegion = (marker) => {
+            // window.location.href=`http://localhost:3000/chat/${address}`;
+        console.log("markerinRegion", marker)
+        };
 
     return (
         <div>
@@ -440,6 +460,11 @@ const YMap = () => {
                     <Button
                         onClick={showRegion}
                         data={{ content: "Регионы" }}
+                        options={{ float: "right" }}
+                    />
+                    <Button
+                        onClick={statRegion}
+                        data={{ content: "Статистика" }}
                         options={{ float: "right" }}
                     />
                         <Button
